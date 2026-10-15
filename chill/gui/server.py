@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import os
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
@@ -36,8 +37,8 @@ from .terminal_api import (
 )
 
 
-HOST = "127.0.0.1"
-PORT = 8765
+HOST = os.environ.get("CHILLOS_HOST", "127.0.0.1")
+PORT = int(os.environ.get("CHILLOS_PORT", "8765"))
 
 
 def response(handler, data, status=200):
