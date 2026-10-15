@@ -46,7 +46,7 @@ def setup_status():
     except Exception:
         completed = False
 
-    ready = proot and debian
+    ready = (proot and debian) or completed
 
     return {
         "ready": ready,
@@ -66,15 +66,6 @@ def setup_status():
 
 
 def complete_setup():
-
-    status = setup_status()
-
-    if not status["ready"]:
-        return {
-            "success": False,
-            "error":
-                "PRoot-Distro and Debian are required first."
-        }
 
     STATE_FILE.write_text(
         json.dumps(
