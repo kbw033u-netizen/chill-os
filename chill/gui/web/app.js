@@ -2453,6 +2453,60 @@ function renderSnifferSockets(data) {
 }
 
 
+function renderSnifferWifi(data) {
+
+    const box =
+        document.getElementById(
+            "snifferWifi"
+        );
+
+    if (!box) {
+        return;
+    }
+
+    box.innerHTML = "";
+
+    const wifi = data.wifi || {};
+
+    const networks =
+        wifi.networks || [];
+
+    if (!networks.length) {
+
+        box.innerHTML = `
+            <div class="sniffer-empty">
+                <strong>NO SAVED WIFI NETWORKS</strong>
+                <small>
+                    No saved WiFi credentials found.
+                    Requires access to NetworkManager
+                    or wpa_supplicant config files.
+                </small>
+            </div>
+        `;
+
+        return;
+    }
+
+    networks.forEach(item => {
+
+        box.innerHTML += `
+            <div class="sniffer-row">
+                <strong>
+                    ${snifferEscape(item.ssid)}
+                </strong>
+
+                <small>
+                    PASSWORD:
+                    ${snifferEscape(item.password || "—")}
+                    •
+                    ${snifferEscape(item.source)}
+                </small>
+            </div>
+        `;
+    });
+}
+
+
 function renderSnifferCapabilities(data) {
 
     const box =
@@ -2561,6 +2615,7 @@ function renderSnifferDashboard(data) {
     renderSnifferDNS(data);
     renderSnifferStatistics(data);
     renderSnifferSockets(data);
+    renderSnifferWifi(data);
     renderSnifferCapabilities(data);
     renderSnifferConnectivity(data);
 

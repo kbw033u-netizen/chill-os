@@ -22,7 +22,7 @@ from .tools import (
 
 
 from .modules import modules, get_module, set_module
-from .sniffer import snapshot, pcap_capability, traffic_snapshot, capture_pcap
+from .sniffer import snapshot, pcap_capability, traffic_snapshot, capture_pcap, wifi_passwords
 from .setup import (
     setup_status,
     complete_setup,
@@ -193,6 +193,11 @@ class ChillHandler(BaseHTTPRequestHandler):
         # Passive Sniffer telemetry
         if path == "/api/sniffer":
             response(self, snapshot())
+            return
+
+        # WiFi saved credentials
+        if path == "/api/sniffer/wifi":
+            response(self, wifi_passwords())
             return
 
         # Capabilities
